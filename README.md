@@ -129,6 +129,90 @@ curl -X DELETE http://localhost:3000/tasks/1 \
   -H "Authorization: Bearer SEU_TOKEN"
 ```
 
+### Perfil do usuario
+
+```bash
+curl -X GET http://localhost:3000/me \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+## Novas Features v2.0.0
+
+### Subtasks (Tarefas aninhadas)
+
+Crie subtasks dentro de uma tarefa principal:
+
+```bash
+curl -X POST http://localhost:3000/tasks/1/subtasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -d '{"title":"Subtarefa 1","position":1}'
+```
+
+**Listar subtasks:**
+
+```bash
+curl -X GET http://localhost:3000/tasks/1/subtasks \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+**Marcar subtask como completa:**
+
+```bash
+curl -X PATCH http://localhost:3000/subtasks/1/toggle \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+### Tags (Classificacao com relacionamento N:N)
+
+Crie tags reutilizaveis:
+
+```bash
+curl -X POST http://localhost:3000/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -d '{"name":"Urgente"}'
+```
+
+**Associar tag a uma tarefa:**
+
+```bash
+curl -X POST http://localhost:3000/tasks/1/tags/1 \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+**Remover tag de uma tarefa:**
+
+```bash
+curl -X DELETE http://localhost:3000/tasks/1/tags/1 \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+## Debug Tools (Desenvolvimento)
+
+Quando `NODE_ENV=development`, os seguintes endpoints ficam disponiveis:
+
+### Ver todos os dados
+
+```bash
+curl -X GET http://localhost:3000/debug/data
+```
+
+Retorna: usuarios, tarefas e subtasks.
+
+### Resetar banco de dados
+
+```bash
+curl -X POST http://localhost:3000/debug/reset
+```
+
+**Resultado:**
+- Deleta todas as tabelas
+- Recria o schema do zero
+- Cria usuario de teste: `admin@local.test` / `123456`
+
+> **Aviso:** Estas rotas NAO estao disponiveis em producao.
+
 ## Documentacao Swagger
 
 Apos iniciar a aplicacao, acesse:
@@ -143,6 +227,13 @@ http://localhost:3000/api-docs
 - Modelo ER: `docs/er-diagram.md`
 - Visualizacao HTML: `docs/database-schema.html`
 
+**Tabelas:**
+- `users` - Usuarios com autenticacao
+- `tasks` - Tarefas principais
+- `subtasks` - Tarefas aninhadas (1:N com tasks)
+- `tags` - Tags reutilizaveis
+- `task_tags` - Relacionamento N:N (tasks <-> tags)
+
 ## Interface CRUD HTML
 
 Arquivo: `docs/crud.html`
@@ -150,10 +241,18 @@ Arquivo: `docs/crud.html`
 1) Inicie a API (`npm run dev`).
 2) Abra o arquivo `docs/crud.html` no navegador.
 3) Cadastre um usuario e faca login para gerar o token.
-4) Com o token ativo, crie, liste, atualize e exclua tarefas.
+4) Com o token ativo, crie tarefas e subtasks, liste, atualize e exclua.
+
+**Features da UI:**
+- Formulario para criar subtasks
+- Checkboxes para marcar subtasks como completas
+- Painel de depuracao (botoes: Ver usuario, Ver dados, Resetar BD)
+- Filtro por status de tarefas
 
 Observacao: as rotas de tarefas exigem token JWT. Sem login, a UI mostra erro 401.
+
 ## Observacoes
 
 - O SQLite gera o arquivo `database.sqlite` na raiz do projeto.
 - As tabelas sao criadas automaticamente no primeiro start.
+- Debug tools sao desabilitadas automaticamente em producao.

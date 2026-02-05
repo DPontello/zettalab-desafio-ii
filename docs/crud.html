@@ -173,6 +173,39 @@
     .tag-ok { background: #dcfce7; color: #166534; }
     .tag-warn { background: #fef3c7; color: #92400e; }
 
+    .subtasks-container {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+    }
+
+    .subtask-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px;
+      font-size: 0.9rem;
+    }
+
+    .subtask-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .subtask-item.completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .subtask-title {
+      font-weight: 500;
+      color: var(--ink-2);
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+
     .tasks {
       display: grid;
       gap: 12px;
@@ -205,6 +238,18 @@
       text-align: center;
       color: var(--ink-2);
       font-size: 0.85rem;
+    }
+
+    .debug-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.85rem;
+      max-height: 260px;
+      overflow: auto;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -258,6 +303,17 @@
         </select>
         <button class="btn btn-primary" onclick="createTask()">Criar</button>
       </div>
+
+      <div class="card">
+        <h2>Subtarefas</h2>
+        <label>Criar subtarefa em tarefa existente</label>
+        <div class="row">
+          <input id="subtaskTaskId" placeholder="Task ID" />
+          <input id="subtaskTitle" placeholder="Titulo da subtarefa" />
+          <input id="subtaskPosition" placeholder="Posicao (opcional)" />
+        </div>
+        <button class="btn btn-primary" onclick="createSubtask()">Criar subtarefa</button>
+      </div>
     </div>
 
     <div class="card">
@@ -271,6 +327,17 @@
         <button class="btn btn-ghost" onclick="loadTasks()">Filtrar</button>
       </div>
       <div id="tasks" class="tasks"></div>
+    </div>
+
+    <div class="card">
+      <h2>Depuracao (somente local)</h2>
+      <div class="row" style="margin-bottom: 10px;">
+        <button class="btn btn-primary" onclick="loadMe()">Usuario logado</button>
+        <button class="btn btn-ghost" onclick="loadDebugData()">Ver dados</button>
+        <button class="btn btn-danger" onclick="resetDatabase()">Resetar BD</button>
+      </div>
+      <div id="debugOutput" class="debug-box">Nenhum dado carregado.</div>
+      <p class="muted" style="margin-top: 8px;">Usuarios listados sem senha (apenas id, nome e email).</p>
     </div>
 
     <div class="footer">Abra este arquivo no navegador com a API rodando.</div>
@@ -375,6 +442,22 @@
       }
     }
 
+
+    async function createSubtask() {
+      try {
+        const taskId = document.getElementById("subtaskTaskId").value;
+        const payload = {
+          title: document.getElementById("subtaskTitle").value,
+          position: Number(document.getElementById("subtaskPosition").value) || 0
+        };
+        await request(`/tasks/${taskId}/subtasks`, { method: "POST", body: JSON.stringify(payload) });
+        setStatus("Subtarefa criada", "ok");
+        loadTasks();
+      } catch (err) {
+        setStatus(`Criacao de subtarefa falhou: ${err.message}`, "err");
+      }
+    }
+
     async function loadTasks() {
       const container = document.getElementById("tasks");
       container.innerHTML = "";
@@ -389,13 +472,33 @@
         tasks.forEach(task => {
           const item = document.createElement("div");
           item.className = "task";
+          
+          // Subtasks HTML
+          let subtasksHtml = '';
+          if (task.subtasks && task.subtasks.length > 0) {
+            subtasksHtml = '<div class="subtasks-container">';
+            subtasksHtml += '<div class="subtask-title">Subtarefas:</div>';
+            task.subtasks.forEach(sub => {
+              const checked = sub.completed ? 'checked' : '';
+              const className = sub.completed ? 'subtask-item completed' : 'subtask-item';
+              subtasksHtml += `
+                <div class="${className}">
+                  <input type="checkbox" ${checked} onclick="toggleSubtask(${sub.id})" />
+                  <span>${sub.title}</span>
+                </div>
+              `;
+            });
+            subtasksHtml += '</div>';
+          }
+          
           item.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
               <h3>${task.title}</h3>
               <span class="tag ${task.status === "COMPLETED" ? "tag-ok" : "tag-warn"}">${task.status}</span>
             </div>
             <small>${task.description}</small>
-            <small>ID: ${task.id} | Usuario: ${task.userId}</small>
+            ${subtasksHtml}
+            <small style="margin-top: 8px;">ID: ${task.id} | Usuario: ${task.userId}</small>
             <div class="row">
               <button class="btn btn-warn" data-id="${task.id}" onclick="markCompleted(${task.id})">Marcar COMPLETED</button>
               <button class="btn btn-danger" data-id="${task.id}" onclick="deleteTask(${task.id})">Excluir</button>
@@ -428,6 +531,52 @@
         loadTasks();
       } catch (err) {
         setStatus(`Delete falhou: ${err.message}`, "err");
+      }
+    }
+
+    async function toggleSubtask(id) {
+      try {
+        await request(`/subtasks/${id}/toggle`, { method: "PATCH" });
+        setStatus("Subtarefa atualizada", "ok");
+        loadTasks();
+      } catch (err) {
+        setStatus(`Toggle falhou: ${err.message}`, "err");
+      }
+    }
+
+    async function loadDebugData() {
+      const output = document.getElementById("debugOutput");
+      output.textContent = "Carregando...";
+      try {
+        const data = await request("/debug/data", { method: "GET" });
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = `Erro: ${err.message}`;
+      }
+    }
+
+    async function loadMe() {
+      const output = document.getElementById("debugOutput");
+      output.textContent = "Carregando usuario...";
+      try {
+        const data = await request("/me", { method: "GET" });
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = `Erro: ${err.message}`;
+      }
+    }
+
+    async function resetDatabase() {
+      const output = document.getElementById("debugOutput");
+      output.textContent = "Resetando...";
+      try {
+        const data = await request("/debug/reset", { method: "POST" });
+        output.textContent = JSON.stringify(data, null, 2);
+        setStatus("Database resetada", "ok");
+        loadTasks();
+      } catch (err) {
+        output.textContent = `Erro: ${err.message}`;
+        setStatus(`Reset falhou: ${err.message}`, "err");
       }
     }
 
