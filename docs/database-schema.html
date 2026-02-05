@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Schema - Task Manager API</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #2d3748;
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: #a0aec0;
+      font-size: 0.95rem;
+    }
+
+    .content {
+      padding: 2rem;
+    }
+
+    .table-section {
+      margin-bottom: 3rem;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid #667eea;
+    }
+
+    .table-icon {
+      width: 40px;
+      height: 40px;
+      background: #667eea;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .table-header h2 {
+      color: #2d3748;
+      font-size: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    thead {
+      background: #f7fafc;
+    }
+
+    th {
+      text-align: left;
+      padding: 1rem;
+      font-weight: 600;
+      color: #4a5568;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 1rem;
+      border-top: 1px solid #e2e8f0;
+      color: #2d3748;
+    }
+
+    tbody tr:hover {
+      background: #f7fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-pk {
+      background: #fed7d7;
+      color: #c53030;
+    }
+
+    .badge-fk {
+      background: #feebc8;
+      color: #c05621;
+    }
+
+    .badge-uk {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .type {
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .constraint {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .relationship {
+      background: #edf2f7;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-top: 2rem;
+    }
+
+    .relationship h3 {
+      color: #2d3748;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .relationship-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .relationship-arrow {
+      color: #667eea;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      background: #f7fafc;
+      padding: 1.5rem;
+      text-align: center;
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .info-box {
+      background: #bee3f8;
+      border-left: 4px solid #3182ce;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 2rem;
+    }
+
+    .info-box p {
+      color: #2c5282;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Database Schema</h1>
+      <p>Task Manager API - SQLite Database Structure</p>
+    </header>
+
+    <div class="content">
+      <div class="info-box">
+        <p><strong>Banco de dados:</strong> SQLite | <strong>ORM:</strong> Sequelize | <strong>Total de tabelas:</strong> 2</p>
+      </div>
+
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-icon">U</div>
+          <h2>USERS</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Constraints</th>
+              <th>Descricao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>id</strong> <span class="badge badge-pk">PK</span></td>
+              <td class="type">INTEGER</td>
+              <td class="constraint">AUTO_INCREMENT, NOT NULL</td>
+              <td>Identificador unico do usuario</td>
+            </tr>
+            <tr>
+              <td><strong>name</strong></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">NOT NULL</td>
+              <td>Nome completo do usuario</td>
+            </tr>
+            <tr>
+              <td><strong>email</strong> <span class="badge badge-uk">UNIQUE</span></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">UNIQUE, NOT NULL</td>
+              <td>Email unico para login</td>
+            </tr>
+            <tr>
+              <td><strong>password_hash</strong></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">NOT NULL</td>
+              <td>Senha criptografada com bcrypt</td>
+            </tr>
+            <tr>
+              <td><strong>created_at</strong></td>
+              <td class="type">DATETIME</td>
+              <td class="constraint">NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+              <td>Data de criacao do registro</td>
+            </tr>
+            <tr>
+              <td><strong>updated_at</strong></td>
+              <td class="type">DATETIME</td>
+              <td class="constraint">NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+              <td>Data da ultima atualizacao</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-icon">T</div>
+          <h2>TASKS</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Constraints</th>
+              <th>Descricao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>id</strong> <span class="badge badge-pk">PK</span></td>
+              <td class="type">INTEGER</td>
+              <td class="constraint">AUTO_INCREMENT, NOT NULL</td>
+              <td>Identificador unico da tarefa</td>
+            </tr>
+            <tr>
+              <td><strong>title</strong></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">NOT NULL</td>
+              <td>Titulo da tarefa</td>
+            </tr>
+            <tr>
+              <td><strong>description</strong></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">NOT NULL</td>
+              <td>Descricao detalhada da tarefa</td>
+            </tr>
+            <tr>
+              <td><strong>status</strong></td>
+              <td class="type">TEXT</td>
+              <td class="constraint">NOT NULL, DEFAULT 'PENDING'</td>
+              <td>Status da tarefa (PENDING, COMPLETED)</td>
+            </tr>
+            <tr>
+              <td><strong>user_id</strong> <span class="badge badge-fk">FK</span></td>
+              <td class="type">INTEGER</td>
+              <td class="constraint">NOT NULL, REFERENCES users(id)</td>
+              <td>ID do usuario proprietario</td>
+            </tr>
+            <tr>
+              <td><strong>created_at</strong></td>
+              <td class="type">DATETIME</td>
+              <td class="constraint">NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+              <td>Data de criacao do registro</td>
+            </tr>
+            <tr>
+              <td><strong>updated_at</strong></td>
+              <td class="type">DATETIME</td>
+              <td class="constraint">NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+              <td>Data da ultima atualizacao</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="relationship">
+        <h3>Relacionamentos</h3>
+        <div class="relationship-item">
+          <strong>USERS</strong>
+          <span class="relationship-arrow">1:N</span>
+          <strong>TASKS</strong>
+          <span style="color: #718096;">(Um usuario possui varias tarefas)</span>
+        </div>
+        <div class="relationship-item">
+          <strong>TASKS.user_id</strong>
+          <span class="relationship-arrow">→</span>
+          <strong>USERS.id</strong>
+          <span style="color: #718096;">(CASCADE on delete)</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Task Manager API - ZettaLab Challenge | Database visualizado em: <span id="datetime"></span></p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('datetime').textContent = new Date().toLocaleString('pt-BR');
+  </script>
+</body>
+</html>

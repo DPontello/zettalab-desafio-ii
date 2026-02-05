@@ -139,9 +139,7 @@ http://localhost:3000/api-docs
 
 ## Banco de dados
 
-- Script SQL: `database_schema.sql`
-- Modelo ER: `docs/er-diagram.md`
-
+ Interface CRUD HTML: `docs/crud.html`
 ## Observacoes
 
 - O SQLite gera o arquivo `database.sqlite` na raiz do projeto.
