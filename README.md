@@ -35,6 +35,20 @@ npm run dev
 
 O servidor inicia em `http://localhost:3000`.
 
+## Testes
+
+```bash
+npm test
+```
+
+## Docker (opcional)
+
+```bash
+docker-compose up --build
+```
+
+A API ficara disponivel em `http://localhost:3000`.
+
 ## Variaveis de ambiente
 
 - `PORT`: porta do servidor (default 3000)
