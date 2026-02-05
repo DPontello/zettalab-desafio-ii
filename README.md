@@ -99,6 +99,14 @@ curl -X DELETE http://localhost:3000/tasks/1 \
   -H "Authorization: Bearer SEU_TOKEN"
 ```
 
+## Documentacao Swagger
+
+Apos iniciar a aplicacao, acesse:
+
+```
+http://localhost:3000/api-docs
+```
+
 ## Banco de dados
 
 - Script SQL: `database_schema.sql`
