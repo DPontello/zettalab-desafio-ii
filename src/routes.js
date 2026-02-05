@@ -2,6 +2,7 @@ const { Router } = require("express");
 const UserController = require("./controllers/UserController");
 const SessionController = require("./controllers/SessionController");
 const TaskController = require("./controllers/TaskController");
+const HealthController = require("./controllers/HealthController");
 const authMiddleware = require("./middlewares/auth");
 
 const routes = new Router();
@@ -12,6 +13,7 @@ const routes = new Router();
  *   - name: Auth
  *   - name: Users
  *   - name: Tasks
+ *   - name: Health
  */
 
 /**
@@ -63,6 +65,18 @@ routes.post("/users", UserController.store);
  *         description: Token gerado
  */
 routes.post("/sessions", SessionController.store);
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     tags: [Health]
+ *     summary: Verifica status da API
+ *     responses:
+ *       200:
+ *         description: API OK
+ */
+routes.get("/health", HealthController.index);
 
 routes.use(authMiddleware);
 

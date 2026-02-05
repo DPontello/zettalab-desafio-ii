@@ -1,14 +1,17 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const authConfig = require("../config/auth");
+const sessionSchema = require("../validators/SessionValidator");
 
 class SessionController {
   async store(req, res) {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required." });
+    try {
+      await sessionSchema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
+
+    const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
     if (!user) {

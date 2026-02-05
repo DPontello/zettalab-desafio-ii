@@ -83,6 +83,12 @@ curl -X GET "http://localhost:3000/tasks?status=COMPLETED" \
   -H "Authorization: Bearer SEU_TOKEN"
 ```
 
+### Health check
+
+```bash
+curl -X GET http://localhost:3000/health
+```
+
 ### Atualizar tarefa
 
 ```bash

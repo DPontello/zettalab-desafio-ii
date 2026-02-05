@@ -1,13 +1,16 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const userSchema = require("../validators/UserValidator");
 
 class UserController {
   async store(req, res) {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Name, email and password are required." });
+    try {
+      await userSchema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
+
+    const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {

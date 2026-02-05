@@ -1,6 +1,5 @@
 const Task = require("../models/Task");
-
-const ALLOWED_STATUS = ["PENDING", "COMPLETED"];
+const taskValidator = require("../validators/TaskValidator");
 
 const normalizeStatus = (status) =>
   typeof status === "string" ? status.toUpperCase() : status;
@@ -11,7 +10,7 @@ class TaskController {
     const where = { userId: req.userId };
 
     if (status) {
-      if (!ALLOWED_STATUS.includes(status)) {
+      if (!taskValidator.allowedStatus.includes(status)) {
         return res.status(400).json({ error: "Invalid status filter." });
       }
       where.status = status;
@@ -38,21 +37,21 @@ class TaskController {
   }
 
   async store(req, res) {
-    const { title, description, status } = req.body;
+    const payload = {
+      ...req.body,
+      status: normalizeStatus(req.body.status) || "PENDING"
+    };
 
-    if (!title || !description) {
-      return res.status(400).json({ error: "Title and description are required." });
-    }
-
-    const normalizedStatus = normalizeStatus(status) || "PENDING";
-    if (!ALLOWED_STATUS.includes(normalizedStatus)) {
-      return res.status(400).json({ error: "Invalid status." });
+    try {
+      await taskValidator.schema.validate(payload, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
 
     const task = await Task.create({
-      title,
-      description,
-      status: normalizedStatus,
+      title: payload.title,
+      description: payload.description,
+      status: payload.status,
       userId: req.userId
     });
 
@@ -68,23 +67,18 @@ class TaskController {
       return res.status(404).json({ error: "Task not found." });
     }
 
-    const { title, description, status } = req.body;
-    const payload = {};
+    const payload = {
+      ...req.body
+    };
 
-    if (title !== undefined) {
-      payload.title = title;
+    if (payload.status !== undefined) {
+      payload.status = normalizeStatus(payload.status);
     }
 
-    if (description !== undefined) {
-      payload.description = description;
-    }
-
-    if (status !== undefined) {
-      const normalizedStatus = normalizeStatus(status);
-      if (!ALLOWED_STATUS.includes(normalizedStatus)) {
-        return res.status(400).json({ error: "Invalid status." });
-      }
-      payload.status = normalizedStatus;
+    try {
+      await taskValidator.updateSchema.validate(payload, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
 
     await task.update(payload);
