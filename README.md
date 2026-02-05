@@ -139,7 +139,20 @@ http://localhost:3000/api-docs
 
 ## Banco de dados
 
- Interface CRUD HTML: `docs/crud.html`
+- Script SQL: `database_schema.sql`
+- Modelo ER: `docs/er-diagram.md`
+- Visualizacao HTML: `docs/database-schema.html`
+
+## Interface CRUD HTML
+
+Arquivo: `docs/crud.html`
+
+1) Inicie a API (`npm run dev`).
+2) Abra o arquivo `docs/crud.html` no navegador.
+3) Cadastre um usuario e faca login para gerar o token.
+4) Com o token ativo, crie, liste, atualize e exclua tarefas.
+
+Observacao: as rotas de tarefas exigem token JWT. Sem login, a UI mostra erro 401.
 ## Observacoes
 
 - O SQLite gera o arquivo `database.sqlite` na raiz do projeto.
