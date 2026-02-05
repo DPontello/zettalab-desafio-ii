@@ -37,9 +37,19 @@ O servidor inicia em `http://localhost:3000`.
 
 ## Testes
 
+### Testes automatizados (Jest)
+
 ```bash
 npm test
 ```
+
+### Testes QA (end-to-end)
+
+```bash
+npm run test:qa
+```
+
+Este script executa automaticamente todos os fluxos da API.
 
 ## Docker (opcional)
 
