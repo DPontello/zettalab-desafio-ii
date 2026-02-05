@@ -1,7 +1,6 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const authConfig = require("../config/auth");
 const sessionSchema = require("../validators/SessionValidator");
+const sessionService = require("../services/SessionService");
+const AppError = require("../errors/AppError");
 
 class SessionController {
   async store(req, res) {
@@ -11,30 +10,24 @@ class SessionController {
       return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
 
-    const { email, password } = req.body;
+    try {
+      const { user, token } = await sessionService.authenticate(req.body);
 
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials." });
+      return res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        },
+        token
+      });
+    } catch (err) {
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message });
+      }
+
+      throw err;
     }
-
-    const passwordMatches = await user.checkPassword(password);
-    if (!passwordMatches) {
-      return res.status(401).json({ error: "Invalid credentials." });
-    }
-
-    const token = jwt.sign({ id: user.id }, authConfig.secret, {
-      expiresIn: authConfig.expiresIn
-    });
-
-    return res.json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      },
-      token
-    });
   }
 }
 

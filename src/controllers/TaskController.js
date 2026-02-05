@@ -1,5 +1,6 @@
-const Task = require("../models/Task");
 const taskValidator = require("../validators/TaskValidator");
+const taskService = require("../services/TaskService");
+const AppError = require("../errors/AppError");
 
 const normalizeStatus = (status) =>
   typeof status === "string" ? status.toUpperCase() : status;
@@ -7,33 +8,32 @@ const normalizeStatus = (status) =>
 class TaskController {
   async index(req, res) {
     const status = normalizeStatus(req.query.status);
-    const where = { userId: req.userId };
-
-    if (status) {
-      if (!taskValidator.allowedStatus.includes(status)) {
-        return res.status(400).json({ error: "Invalid status filter." });
+    try {
+      const tasks = await taskService.list({ userId: req.userId, status });
+      return res.json(tasks);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message });
       }
-      where.status = status;
+
+      throw err;
     }
-
-    const tasks = await Task.findAll({
-      where,
-      order: [["createdAt", "DESC"]]
-    });
-
-    return res.json(tasks);
   }
 
   async show(req, res) {
-    const task = await Task.findOne({
-      where: { id: req.params.id, userId: req.userId }
-    });
+    try {
+      const task = await taskService.findById({
+        userId: req.userId,
+        taskId: req.params.id
+      });
+      return res.json(task);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message });
+      }
 
-    if (!task) {
-      return res.status(404).json({ error: "Task not found." });
+      throw err;
     }
-
-    return res.json(task);
   }
 
   async store(req, res) {
@@ -48,25 +48,12 @@ class TaskController {
       return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
 
-    const task = await Task.create({
-      title: payload.title,
-      description: payload.description,
-      status: payload.status,
-      userId: req.userId
-    });
+    const task = await taskService.create({ userId: req.userId, payload });
 
     return res.status(201).json(task);
   }
 
   async update(req, res) {
-    const task = await Task.findOne({
-      where: { id: req.params.id, userId: req.userId }
-    });
-
-    if (!task) {
-      return res.status(404).json({ error: "Task not found." });
-    }
-
     const payload = {
       ...req.body
     };
@@ -81,23 +68,33 @@ class TaskController {
       return res.status(400).json({ error: "Validation fails.", details: err.errors });
     }
 
-    await task.update(payload);
+    try {
+      const task = await taskService.update({
+        userId: req.userId,
+        taskId: req.params.id,
+        payload
+      });
+      return res.json(task);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message });
+      }
 
-    return res.json(task);
+      throw err;
+    }
   }
 
   async delete(req, res) {
-    const task = await Task.findOne({
-      where: { id: req.params.id, userId: req.userId }
-    });
+    try {
+      await taskService.remove({ userId: req.userId, taskId: req.params.id });
+      return res.status(204).send();
+    } catch (err) {
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message });
+      }
 
-    if (!task) {
-      return res.status(404).json({ error: "Task not found." });
+      throw err;
     }
-
-    await task.destroy();
-
-    return res.status(204).send();
   }
 }
 
