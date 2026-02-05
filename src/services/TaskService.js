@@ -15,12 +15,37 @@ class TaskService {
 
     return Task.findAll({
       where,
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          association: 'tags',
+          attributes: ['id', 'name', 'color'],
+          through: { attributes: [] },
+        },
+        {
+          association: 'subtasks',
+          attributes: ['id', 'title', 'completed', 'position'],
+        },
+      ],
     });
   }
 
   async findById({ userId, taskId }) {
-    const task = await Task.findOne({ where: { id: taskId, userId } });
+    const task = await Task.findOne({
+      where: { id: taskId, userId },
+      include: [
+        {
+          association: 'tags',
+          attributes: ['id', 'name', 'color'],
+          through: { attributes: [] },
+        },
+        {
+          association: 'subtasks',
+          attributes: ['id', 'title', 'completed', 'position'],
+          order: [['position', 'ASC']],
+        },
+      ],
+    });
     if (!task) {
       throw new AppError("Task not found.", 404);
     }

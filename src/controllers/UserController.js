@@ -1,5 +1,6 @@
 const userSchema = require("../validators/UserValidator");
 const userService = require("../services/UserService");
+const User = require("../models/User");
 const AppError = require("../errors/AppError");
 
 class UserController {
@@ -24,6 +25,22 @@ class UserController {
       }
 
       throw err;
+    }
+  }
+
+  async me(req, res) {
+    try {
+      const user = await User.findByPk(req.userId, {
+        attributes: ["id", "name", "email", "createdAt", "updatedAt"]
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      return res.json(user);
+    } catch (err) {
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 }
