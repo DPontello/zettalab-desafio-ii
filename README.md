@@ -1,13 +1,31 @@
 # Task Manager API - ZettaLab Desafio II
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-green)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.21.2-blue)](https://expressjs.com/)
+[![CI](https://github.com/DPontello/zettalab-desafio-ii/actions/workflows/ci.yml/badge.svg)](https://github.com/DPontello/zettalab-desafio-ii/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4-blue)](https://expressjs.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-3-lightblue)](https://www.sqlite.org/)
 [![Jest](https://img.shields.io/badge/Tests-5%2F5%20passing-brightgreen)](https://jestjs.io/)
 
 > **Documentação Swagger:** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
+## O que é
+
 API REST para gerenciamento de tarefas com autenticação JWT, subtarefas aninhadas e sistema de tags.
+
+Desenvolvida como desafio técnico da trilha **Desenvolvimento de Software** do **Zetta Lab – 2ª edição** (Agência Zetta / UFLA), programa no qual fui reconhecido como **destaque da edição** (maio/2026).
+
+![Swagger UI da Task Manager API](docs/img/swagger.png)
+
+## Tecnologias
+
+| Camada | Tecnologia |
+| :--- | :--- |
+| Backend | Node.js 18+, Express 4, arquitetura em camadas (controllers → services → models) |
+| Banco de dados | SQLite 3 via Sequelize ORM (relacionamentos 1:N e N:N) |
+| Segurança | JWT + bcryptjs, validação de entrada com Yup |
+| Qualidade | Jest + Supertest (testes de integração), GitHub Actions (CI) |
+| Documentação | Swagger / OpenAPI 3 |
+| Infra | Docker / Docker Compose |
 
 ## O que foi implementado
 
@@ -199,8 +217,10 @@ curl -X POST http://localhost:3000/sessions \
 curl -X POST http://localhost:3000/tasks \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer SEU_TOKEN" \
-  -d '{"title":"Comprar leite","status":"PENDING"}'
+  -d '{"title":"Documentar endpoints no Swagger","description":"Rotas de tarefas e subtarefas","status":"PENDING"}'
 ```
+
+> `title` e `description` são obrigatórios; sem `description` a API responde `400 Validation fails`.
 
 ### 4. Criar subtask
 ```bash
@@ -219,6 +239,24 @@ curl http://localhost:3000/tasks \
 # Apenas pendentes
 curl "http://localhost:3000/tasks?status=PENDING" \
   -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Resposta real (após os passos 3 e 4):
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Documentar endpoints no Swagger",
+    "description": "Rotas de tarefas e subtarefas",
+    "status": "PENDING",
+    "userId": 1,
+    "tags": [],
+    "subtasks": [
+      { "id": 1, "title": "Descrever rota /tasks", "completed": false, "position": 1 }
+    ]
+  }
+]
 ```
 
 ---
